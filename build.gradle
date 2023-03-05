@@ -1,0 +1,50 @@
+plugins {
+    id 'org.springframework.boot' version '2.7.5'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'java'
+    id 'war'
+}
+
+group = 'com.lupo'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+def versions = [
+        AkkaVersion: "2.7.0",
+        AkkaHttpVersion: "10.4.0",
+        ScalaBinary: "2.13"
+]
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    implementation group: 'com.google.cloud', name: 'libraries-bom', version: '26.1.4', ext: 'pom'
+
+
+    implementation group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '1.120.24'
+    implementation group: 'com.lupo', name: 'akka-pubsub-connector', version: '0.0.1-SNAPSHOT'
+    implementation 'com.typesafe.akka:akka-actor-typed_2.13:2.7.0'
+    implementation "com.lightbend.akka:akka-stream-alpakka-google-cloud-pub-sub_${versions.ScalaBinary}:5.0.0"
+    implementation "com.typesafe.akka:akka-stream_${versions.ScalaBinary}:${versions.AkkaVersion}"
+    implementation "com.typesafe.akka:akka-http_${versions.ScalaBinary}:${versions.AkkaHttpVersion}"
+    implementation "com.typesafe.akka:akka-http-spray-json_${versions.ScalaBinary}:${versions.AkkaHttpVersion}"
+
+    implementation "com.lightbend.akka:akka-stream-alpakka-solr_${versions.ScalaBinary}:5.0.0"
+    implementation "com.typesafe.akka:akka-stream_${versions.ScalaBinary}:${versions.AkkaVersion}"
+
+
+    implementation 'com.google.code.gson:gson:2.10'
+
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

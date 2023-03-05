@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<config>
+    <abortOnConfigurationError>${solr.abortOnConfigurationError:true}</abortOnConfigurationError>
+    <luceneMatchVersion>7.6.0</luceneMatchVersion>
+
+    <schemaFactory class="ClassicIndexSchemaFactory"/>
+
+    <indexConfig>
+        <mergePolicyFactory class="org.apache.solr.index.TieredMergePolicyFactory">
+            <int name="maxMergeAtOnce">3</int>
+            <int name="segmentsPerTier">3</int>
+            <int name="maxMergedSegmentMB">512</int>
+            <int name="deletesPctAllowed">50</int>
+        </mergePolicyFactory>
+        <useCompoundFile>true</useCompoundFile>
+        <infoStream>true</infoStream>
+    </indexConfig>
+
+    <updateHandler class="solr.DirectUpdateHandler2">
+        <autoCommit>
+            <maxTime>60000</maxTime>
+            <openSearcher>false</openSearcher>
+        </autoCommit>
+        <!-- Soft commit every 6 min to make writes are available faster -->
+        <autoSoftCommit>
+            <maxTime>360000</maxTime>
+        </autoSoftCommit>
+    </updateHandler>
+
+
+    <query>
+
+        <maxBooleanClauses>1024</maxBooleanClauses>
+        <filterCache class="solr.FastLRUCache" size="512" initialSize="512" autowarmCount="0"/>
+        <queryResultCache class="solr.LRUCache" size="0" initialSize="0" autowarmCount="0"/>
+        <documentCache class="solr.LRUCache" size="10240" initialSize="10240" autowarmCount="0"/>
+        <enableLazyFieldLoading>true</enableLazyFieldLoading>
+        <queryResultWindowSize>15</queryResultWindowSize>
+        <queryResultMaxDocsCached>30</queryResultMaxDocsCached>
+        <useColdSearcher>false</useColdSearcher>
+        <maxWarmingSearchers>2</maxWarmingSearchers>
+        <listener event="newSearcher" class="solr.QuerySenderListener">
+            <arr name="queries">
+                  <lst>
+                      <str name="q">sesame</str>
+                  </lst>
+            </arr>
+        </listener>
+    </query>
+
+    <searchComponent name="spellcheck" class="solr.SpellCheckComponent">
+        <lst name="spellchecker">
+            <str name="name">default</str>
+            <str name="field">suggestion_edge_ngram</str>
+            <str name="classname">solr.DirectSolrSpellChecker</str>
+            <str name="distanceMeasure">internal</str>
+            <int name="maxEdits">2</int>
+            <int name="minPrefix">0</int>
+            <int name="maxInspections">5</int>
+            <int name="minQueryLength">1</int>
+            <int name="maxQueryLength">40</int>
+        </lst>
+        <lst name="spellchecker">
+            <str name="name">wordbreak</str>
+            <str name="classname">solr.WordBreakSolrSpellChecker</str>
+            <str name="field">suggestion_edge_ngram</str>
+            <str name="combineWords">true</str>
+            <str name="breakWords">true</str>
+            <int name="maxChanges">20</int>
+        </lst>
+    </searchComponent>
+
+    <requestDispatcher>
+        <requestParsers enableRemoteStreaming="true"
+                        enableStreamBody="true"
+                        multipartUploadLimitInKB="2048000"/>
+        <httpCaching never304="true"/>
+    </requestDispatcher>
+
+    <requestHandler name="/update/json" class="solr.UpdateRequestHandler"
+                    startup="lazy"/>
+
+    <requestHandler name="/suggest" class="solr.SearchHandler">
+        <arr name="components">
+            <str>query</str>
+            <str>debug</str>
+            <str>stats</str>
+            <str>expand</str>
+            <str>spellcheck</str>
+        </arr>
+        <lst name="defaults">
+            <str name="defType">edismax</str>
+            <str name="qf">suggestion_edge_ngram^100</str>
+            <str name="fl">suggestion</str>
+            <int name="rows">10</int>
+            <str name="echoParams">explicit</str>
+        </lst>
+    </requestHandler>
+
+    <admin>
+        <defaultQuery>*:*</defaultQuery>
+        <healthcheck type="file">server-enabled</healthcheck>
+    </admin>
+
+</config>

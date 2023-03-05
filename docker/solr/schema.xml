@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<schema name="suggestions" version="1.6">
+    <types>
+        <fieldType name="string" class="solr.StrField"
+                   sortMissingLast="true" omitNorms="true"/>
+
+        <fieldType name="plong" class="solr.LongPointField"
+                   positionIncrementGap="0" omitNorms="true" docValues="true"/>
+
+        <fieldType name="edge_ngrams_keyword" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="false">
+            <analyzer type="index">
+                <tokenizer class="solr.KeywordTokenizerFactory"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+                <filter class="solr.EdgeNGramFilterFactory" minGramSize="1" maxGramSize="99"/>
+            </analyzer>
+            <analyzer type="query">
+                <tokenizer class="solr.KeywordTokenizerFactory"/>
+                <filter class="solr.LowerCaseFilterFactory"/>
+            </analyzer>
+        </fieldType>
+    </types>
+
+    <fields>
+        <field name="id" type="string" indexed="true" stored="true" multiValued="false"/>
+        <field name="suggestion" type="string" indexed="true" stored="true" multiValued="false"/>
+        <field name="suggestion_edge_ngram" type="edge_ngrams_keyword" indexed="true" stored="false"/>
+        <field name="_version_" type="plong" indexed="true" stored="true" multiValued="false"/>
+
+        <copyField source="suggestion" dest="suggestion_edge_ngram"/>
+    </fields>
+    <uniqueKey>id</uniqueKey>
+</schema>
